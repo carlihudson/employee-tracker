@@ -1,17 +1,19 @@
 // dependencies
 const inquirer = require('inquirer');
-const mysql2 = require('mysql2');
+const mysql = require('mysql2');
 const consoleTable = require('console.table');
 
 require('dotenv').config()
 
+deptArray = []
+
 // connect to the database
-const db = mysql2.createConnection(
+const db = mysql.createConnection(
     {
         host: 'localhost',
-        database: 'process.env.DB_NAME',
-        password: 'process.env.DB_PASSWORD',
-        user: 'process.env.DB_USER',
+        database: 'employees_db',
+        password: '',
+        user: 'root',
        
     },
 
@@ -61,16 +63,17 @@ const start = () => {
             }
         ]
     )
-    .then(() => {
-        switch(answers) {
+    .then((answer) => {
+        console.log(answer)
+        switch(answer.startMenu) {
             case 'View all Departments':
-                view(department)
+                view('department')
                 break;
             case 'View all Roles':
-                view(role)
+                view('role')
                 break;
             case 'View all Employees':
-                view(employee)
+                view('employee')
                 break;
             case 'Add a Department':
                 addDepartment()
@@ -79,7 +82,7 @@ const start = () => {
                 addRole()
                 break;
             case 'Add an Employee':
-                // function to add an employee
+                addEmployee()
                 break;
             case 'Update an Employee Role':
                 // function to update an employee role
@@ -95,16 +98,22 @@ const start = () => {
 }
 
 view = (viewVal) => {
-    let query;
+    let query
     if(viewVal === 'department') {
-        query = `SELECT * FROM department`;
+        query= `SELECT * FROM department`;
     } else if(viewVal === 'role') {
-        query = ``;
+        query = `SELECT * FROM role`;
     } else {
-        query = ``
+        query = `SELECT * FROM employee`
     }
-}
-
+    db.promise().query(query) 
+    .then((results) => {
+        console.table(results[0]) 
+        start()
+        } 
+    )
+} 
+  
 addDepartment = () => {
     inquirer.prompt(
         [{
@@ -113,6 +122,7 @@ addDepartment = () => {
             message: 'What is the name of the department?',
             validate: addDept => {
                 if(addDept) {
+                    deptArray.push(addDept)
                     return true;
                 } else {
                     console.log('Please enter a department name');
@@ -123,7 +133,7 @@ addDepartment = () => {
         ]
     )
     .then(deptInput => {
-        deptInput.query('INSERT INTO department (name) VALUES (?)', [deptInput.name], (err, res) => {
+        db.query('INSERT INTO department (dept_name) VALUES (?)', [deptInput.addDept], (err, res) => {
             if (err) throw err;
             console.log('Department Added!');
             start();
@@ -159,13 +169,33 @@ addRole = () => {
                     return false;
                 }
             }
-        }
-        // is there where I ask what dept the role is in?
+        },
+        {
+         type: 'input',
+         name: 'roleDept',
+         message: 'What department is this role in?',
+         validate: roleDept = () => {
+             if(roleDept) {
+                 return true;
+             } else {
+                 return false;
+             }
+         }
+       } 
+       //need to push value 
+       // go through array and go through ids and names
 
         ]
     )
-    .then()
     // add to role table
+    .then(roleInput => {
+        deptInput.query('INSERT INTO role (title, salary) VALUES (?, ?)', [roleInput.name], (err, res) => {
+            if (err) throw err;
+            console.log('Department Added!');
+            start();
+        })
+    })
+
     // console log updated role table
     
 }
@@ -207,6 +237,8 @@ addEmployee= () => {
         ]
     )
     }
+
+
 
 start()
 
