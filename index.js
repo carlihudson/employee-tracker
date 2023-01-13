@@ -3,6 +3,7 @@ const inquirer = require('inquirer');
 const mysql = require('mysql2');
 const consoleTable = require('console.table');
 
+
 require('dotenv').config()
 
 deptArray = []
@@ -64,7 +65,6 @@ const start = () => {
         ]
     )
     .then((answer) => {
-        console.log(answer)
         switch(answer.startMenu) {
             case 'View all Departments':
                 view('department')
@@ -104,7 +104,7 @@ view = (viewVal) => {
     } else if(viewVal === 'role') {
         query = `SELECT * FROM role`;
     } else {
-        query = `SELECT * FROM employee`
+        query = `SELECT * FROM employee`;
     }
     db.promise().query(query) 
     .then((results) => {
@@ -133,7 +133,7 @@ addDepartment = () => {
         ]
     )
     .then(deptInput => {
-        db.query('INSERT INTO department (dept_name) VALUES (?)', [deptInput.addDept], (err, res) => {
+        db.query('INSERT INTO department (name) VALUES (?)', [deptInput.addDept], (err, res) => {
             if (err) throw err;
             console.log('Department Added!');
             start();
@@ -145,10 +145,10 @@ addRole = () => {
     inquirer.prompt(
         [{
             type: 'input',
-            name: 'addRole',
+            name: 'roleTitle',
             message: 'What is the role title?',
-            validate: addRole => {
-                if(addRole) {
+            validate: roleTitle => {
+                if(roleTitle) {
                     return true;
                 } else {
                     console.log('Please enter a role name');
@@ -171,34 +171,42 @@ addRole = () => {
             }
         },
         {
-         type: 'input',
-         name: 'roleDept',
-         message: 'What department is this role in?',
-         validate: roleDept = () => {
-             if(roleDept) {
-                 return true;
-             } else {
-                 return false;
+            type: 'input',
+            name: 'roleDept',
+            message: 'What department is this role in?',
+            validate: roleDept = () => {
+                 if(roleDept) {
+                     return true;
+                } else {
+                     return false;
+                 }
+                }
              }
-         }
-       } 
-       //need to push value 
-       // go through array and go through ids and names
+            ]
+        )
+        .then(response => {
+            db.query('SELECT * FROM department WHERE name = ?', [response.roleDept], (err, department) => {
+                console.log(response.roleDept);
+                if(err) {
+                    console.log('There is an error. Please try again');
+                    console.log(err);
+                    addRole()
+                }
+                if(!department) {
+                    console.log('Please enter a valid department')
+                    addRole()
+                } else {
+                    db.query('INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)',[response.roleTitle, response.salary, department[0].id], (err, res) => {
+                        if (err) throw err;
+                            console.log('Role Added!');
+                            start();
+                    }) 
+                }
+               
+              })
+            })
+        }
 
-        ]
-    )
-    // add to role table
-    .then(roleInput => {
-        deptInput.query('INSERT INTO role (title, salary) VALUES (?, ?)', [roleInput.name], (err, res) => {
-            if (err) throw err;
-            console.log('Department Added!');
-            start();
-        })
-    })
-
-    // console log updated role table
-    
-}
 
 addEmployee= () => {
     inquirer.prompt(
@@ -231,11 +239,60 @@ addEmployee= () => {
             }
 
             },
+            {
+                type: 'input',
+                name: 'employeeRole',
+                message: "What is the employee's role?",
+                validate: employeeRole => {
+                if(employeeRole) {
+                    return true;
+                } else {
+                    console.log('Please enter a role');
+                    return false;
+                }
+            }
 
-            // add role?
-            // add manager?
+            },
+            {
+                type: 'input',
+                name: 'employeeManager',
+                message: "Who is the employee's manager?",
+                validate: employeeManager => {
+                if(employeeManager) {
+                    return true;
+                } else {
+                    console.log('Please enter a name');
+                    return false;
+                }
+            }
+
+            },
+
+          
         ]
     )
+    .then(response => {
+        db.query('SELECT * FROM role WHERE title = ?', [response.employeeRole], (err, role) => {
+            console.log(response.employeeRole);
+            if(err) {
+                console.log('There is an error. Please try again');
+                console.log(err);
+                addEmployee()
+            }
+            if(!role) {
+                console.log('Please enter a valid role')
+                addEmployee()
+            } else {
+                // this is still not working
+                db.query('INSERT INTO employee (firstName, lastName, employeeRole, employeeManager) VALUES (?, ?, ?, ?)',[response.firstName, response.lastName, role[0].id, employee[0].id], (err, res) => {
+                    if (err) throw err;
+                        console.log('Employee Added!');
+                        start();
+                }) 
+            }
+           
+          })
+        })
     }
 
 
