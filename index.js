@@ -139,8 +139,14 @@ addDepartment = () => {
 }
 
 addRole = () => {
+    const deptData = `SELECT name FROM department`;
+    db.promise().query(deptData, (err, data) => {
+        if (err) throw err;
+        const deptChoicesArray = data.map(({ name, id }) => ({ name: name, value: id }))
+
     inquirer.prompt(
-        [{
+        [
+            {
             type: 'input',
             name: 'roleTitle',
             message: 'What is the role title?',
@@ -153,7 +159,7 @@ addRole = () => {
                 }
             }
         },
-        {
+            {
             type: 'input',
             type: 'number',
             name: 'salary',
@@ -167,25 +173,15 @@ addRole = () => {
                 }
             }
         },
-        ])
-
-    const deptData = `SELECT name FROM department`;
-    db.promise().query(deptData, (err, data) => {
-        if (err) throw err;
-        const deptChoicesArray = data.map(({ name, id }) => ({ name: name, value: id }))
-
-        inquirer.prompt(
-            [
-                {
-                    type: 'list',
-                    name: 'roleDept',
+             {
+             type: 'list',
+            name: 'roleDept',
                     message: "What department is this role in",
                     choices: deptChoicesArray
                 }
             ]
-        );
-    }
-    )
+        )
+    
         .then(response => {
             db.query('SELECT * FROM department WHERE name = ?', [response.roleDept], (err, department) => {
                 console.log(response.roleDept);
@@ -207,7 +203,8 @@ addRole = () => {
 
             })
         }
-        )
+    )}
+    )
 }
 
 
