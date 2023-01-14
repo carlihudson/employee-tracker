@@ -139,12 +139,12 @@ addDepartment = () => {
 }
 
 addRole = () => {
-    const deptData = `SELECT name FROM department`;
+    const deptData = `SELECT * FROM department`;
     db.promise()
         .query(deptData)
         .then((err, data) => {
             if (err) throw err;
-            const deptChoicesArray = data.map(({ name, id }) => ({
+            const deptChoicesArray = data[0].map(({ name, id }) => ({
                 name: name,
                 value: id,
             }));
