@@ -140,72 +140,84 @@ addDepartment = () => {
 
 addRole = () => {
     const deptData = `SELECT name FROM department`;
-    db.promise().query(deptData, (err, data) => {
-        if (err) throw err;
-        const deptChoicesArray = data.map(({ name, id }) => ({ name: name, value: id }))
+    db.promise()
+        .query(deptData)
+        .then((err, data) => {
+            if (err) throw err;
+            const deptChoicesArray = data.map(({ name, id }) => ({
+                name: name,
+                value: id,
+            }));
 
-    inquirer.prompt(
-        [
-            {
-            type: 'input',
-            name: 'roleTitle',
-            message: 'What is the role title?',
-            validate: roleTitle => {
-                if (roleTitle) {
-                    return true;
-                } else {
-                    console.log('Please enter a role name');
-                    return false;
-                }
-            }
-        },
-            {
-            type: 'input',
-            type: 'number',
-            name: 'salary',
-            message: "What is this role's salary?",
-            validate: salary => {
-                if (salary) {
-                    return true;
-                } else {
-                    console.log('Please enter a salary');
-                    return false;
-                }
-            }
-        },
-             {
-             type: 'list',
-            name: 'roleDept',
-                    message: "What department is this role in",
-                    choices: deptChoicesArray
-                }
-            ]
-        )
-    
-        .then(response => {
-            db.query('SELECT * FROM department WHERE name = ?', [response.roleDept], (err, department) => {
-                console.log(response.roleDept);
-                if (err) {
-                    console.log('There is an error. Please try again');
-                    console.log(err);
-                    addRole()
-                }
-                if (!department) {
-                    console.log('Please enter a valid department')
-                    addRole()
-                } else {
-                    db.query('INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)', [response.roleTitle, response.salary, department[0].id], (err, res) => {
-                        if (err) throw err;
-                        console.log('Role Added!');
-                        start();
-                    })
-                }
+            inquirer.prompt([
+                {
+                    type: 'input',
+                    name: 'roleTitle',
+                    message: 'What is the role title?',
+                    validate: (roleTitle) => {
+                        if (roleTitle) {
+                            return true;
+                        } else {
+                            console.log('Please enter a role name');
+                            return false;
+                        }
+                    },
+                },
+                {
+                    type: 'input',
+                    type: 'number',
+                    name: 'salary',
+                    message: "What is this role's salary?",
+                    validate: (salary) => {
+                        if (salary) {
+                            return true;
+                        } else {
+                            console.log('Please enter a salary');
+                            return false;
+                        }
+                    },
+                },
+                {
+                    type: 'list',
+                    name: 'roleDept',
+                    message: 'What department is this role in',
+                    choices: deptChoicesArray,
+                },
+            ]);
+        })
 
-            })
-        }
-    )}
-    )
-}
+        .then((response) => {
+            db.query(
+                'SELECT * FROM department WHERE name = ?',
+                [response.roleDept],
+                (err, department) => {
+                    console.log(response.roleDept);
+                    if (err) {
+                        console.log('There is an error. Please try again');
+                        console.log(err);
+                        addRole();
+                    }
+                    if (!department) {
+                        console.log('Please enter a valid department');
+                        addRole();
+                    } else {
+                        db.query(
+                            'INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)',
+                            [response.roleTitle, response.salary, department[0].id],
+                            (err, res) => {
+                                if (err) throw err;
+                                console.log('Role Added!');
+                                start();
+                            }
+                        );
+                    }
+                }
+            );
+        })
+        .catch((err) => {
+            console.log(err);
+        });
+};
 
 
 addEmployee = () => {
