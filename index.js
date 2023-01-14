@@ -89,7 +89,7 @@ const start = () => {
                 break;
             case 'No Action':
                 console.log('Thanks for Visiting!');
-                // function to disconnect
+                db.end()
         }
     })
     .catch(err => {
@@ -274,6 +274,7 @@ addEmployee= () => {
     .then(response => {
         db.query('SELECT * FROM role WHERE title = ?', [response.employeeRole], (err, role) => {
             console.log(response.employeeRole);
+            console.log(response.employeeManager)
             if(err) {
                 console.log('There is an error. Please try again');
                 console.log(err);
@@ -281,6 +282,9 @@ addEmployee= () => {
             }
             if(!role) {
                 console.log('Please enter a valid role')
+                addEmployee()
+            } else if(!employee) {
+                console.log('Please enter a valid employee')
                 addEmployee()
             } else {
                 // this is still not working
