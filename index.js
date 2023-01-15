@@ -120,10 +120,13 @@ view = (viewVal) => {
         employee.first_name AS First_Name,
         employee.last_name AS Last_Name
         FROM employee`
+        // role.title AS Role,
+        // role.id AS Role_ID
+        // LEFT JOIN role ON employee.role_id = role_id
         // CONCAT (manager.first_name, " ", manager.last_name) AS manager FROM employee
         // employee.manager_id AS Manager_ID
         
-        // LEFT JOIN role ON employee.role_id = role_id
+       
         // LEFT JOIN department ON role.department_id = department_id
         // LEFT JOIN employee manager ON employee.manager_id = manager.id
         ;
