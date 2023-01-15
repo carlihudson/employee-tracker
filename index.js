@@ -124,13 +124,14 @@ view = (viewVal) => {
         role.salary AS Salary,
         department.name AS Department,
         department.id AS Dept_ID,
-        CONCAT (manager.first_name, " ", manager.last_name) AS Manager
+        CONCAT (manager.first_name, " ", manager.last_name) AS Manager,
         employee.manager_id AS Manager_ID
         FROM employee
         LEFT JOIN role ON employee.role_id = role.id
         LEFT JOIN department ON role.department_id = department.id
         LEFT JOIN employee manager ON employee.manager_id = manager.id`
         ;
+       
 
     }
     db.promise().query(query)
@@ -351,7 +352,7 @@ updateRole = () => {
                     .then(response => {
                         const updatedRole = response.newRole;
                         const employeeID = response.employeeToUpdate
-                        db.query(`UPDATE employee SET role_id = ? WHERE id = ?`, [updatedRole, em], (err, res) => {
+                        db.query(`UPDATE employee SET role_id = ? WHERE id = ?`, [updatedRole, employeeID], (err, res) => {
                             if (err) throw err;
                             console.log('Employee Role Updated!');
                                     start();
