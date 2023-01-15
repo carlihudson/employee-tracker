@@ -118,18 +118,20 @@ view = (viewVal) => {
         console.log('EMPLOYEES \n')
         query = `SELECT employee.id AS ID, 
         employee.first_name AS First_Name,
-        employee.last_name AS Last_Name
-        FROM employee`
-        // role.title AS Role,
-        // role.id AS Role_ID
-        // LEFT JOIN role ON employee.role_id = role_id
-        // CONCAT (manager.first_name, " ", manager.last_name) AS manager FROM employee
-        // employee.manager_id AS Manager_ID
-        
-       
-        // LEFT JOIN department ON role.department_id = department_id
-        // LEFT JOIN employee manager ON employee.manager_id = manager.id
+        employee.last_name AS Last_Name,
+        role.title AS Role,
+        role.id AS Role_ID,
+        role.salary AS Salary,
+        department.name AS Department,
+        department.id AS Dept_ID,
+        CONCAT (manager.first_name, " ", manager.last_name) AS Manager
+        employee.manager_id AS Manager_ID
+        FROM employee
+        LEFT JOIN role ON employee.role_id = role.id
+        LEFT JOIN department ON role.department_id = department.id
+        LEFT JOIN employee manager ON employee.manager_id = manager.id`
         ;
+
     }
     db.promise().query(query)
         .then((results) => {
