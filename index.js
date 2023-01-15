@@ -82,7 +82,7 @@ const start = () => {
                     addEmployee()
                     break;
                 case 'Update an Employee Role':
-                    // updateRole
+                    updateRole()
                     break;
                 case 'No Action':
                     console.log('Thanks for Visiting!');
@@ -298,7 +298,56 @@ addEmployee = () => {
             });
         };
 
-        // updateRole()
+updateRole = () => {
+    const roleList = `SELECT * FROM role`;
+    db.promise()
+        .query(roleList)
+        .then(([rows]) => {
+            const roleListArray = rows.map(({ title, department_id }) => ({
+                name: title, 
+                value: department_id,
+            }))
+    
+    const employeeList = `SELECT * FROM employee`;
+    db.promise()
+        .query(employeeList)
+        .then(([rows]) => {
+            const employeeListArray = rows.map(({ id, first_name, last_name }) => ({
+                name: first_name + " " + last_name,
+                value: id,
+            }))
+
+            inquirer.prompt(
+                [
+                    {
+                        type: 'list',
+                        name: 'employeeToUpdate',
+                        message: "What employee would you like to update?",
+                        choices: employeeListArray
+                    },
+                    {
+                        type: 'list',
+                        name: 'newRole',
+                        message: "What is the employee's new role?",
+                        choices: roleListArray
+        
+                    }
+                    ])
+                    .then(response => {
+                        const updatedRole = response.newRole;
+                        db.query(`UPDATE employee SET role_id = ? WHERE id = ?`, [updatedRole], (err, res) => {
+                            if (err) throw err;
+                            console.log('Employee Role Updated!');
+                                    start();
+                        })
+                    })
+                
+                })
+            })
+            .catch((err) => {
+                console.log(err);
+            });
+        };
 
     
 
