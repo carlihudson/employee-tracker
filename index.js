@@ -17,6 +17,7 @@ const db = mysql.createConnection(
 
 );
 
+// opening art for when user enters application
 if (db) {
     console.log('/$$$$$$$$                         /$$                                        ')
     console.log('| $$_____/                        | $$  ')
@@ -61,6 +62,7 @@ const start = () => {
             }
         ]
     )
+    // switch statement to call functions depending on user choice
         .then((answer) => {
             switch (answer.startMenu) {
                 case 'View all Departments':
@@ -94,14 +96,37 @@ const start = () => {
         });
 }
 
+// function to view tables
 view = (viewVal) => {
     let query
     if (viewVal === 'department') {
-        query = `SELECT * FROM department`;
+        console.log('DEPARTMENTS \n')
+        query = `SELECT department.id AS ID, 
+        department.name AS Name
+        FROM department`;
     } else if (viewVal === 'role') {
-        query = `SELECT * FROM role`;
+        console.log('ROLES \n')
+        query = `SELECT role.id AS Role_ID,
+        role.title AS Name,
+        role.salary AS Salary,
+        department.name AS Department,
+        department.id AS Dept_ID
+        FROM role
+        LEFT JOIN department ON role.department_id = department.id`;
     } else {
-        query = `SELECT * FROM employee`;
+        //employee table
+        console.log('EMPLOYEES \n')
+        query = `SELECT employee.id AS ID, 
+        employee.first_name AS First_Name,
+        employee.last_name AS Last_Name
+        FROM employee`
+        // CONCAT (manager.first_name, " ", manager.last_name) AS manager FROM employee
+        // employee.manager_id AS Manager_ID
+        
+        // LEFT JOIN role ON employee.role_id = role_id
+        // LEFT JOIN department ON role.department_id = department_id
+        // LEFT JOIN employee manager ON employee.manager_id = manager.id
+        ;
     }
     db.promise().query(query)
         .then((results) => {
@@ -111,6 +136,7 @@ view = (viewVal) => {
         )
 }
 
+// functions to add information
 addDepartment = () => {
     inquirer.prompt(
         [{
@@ -186,29 +212,12 @@ addRole = () => {
                 ])
                 .then((response) => {
                     db.query(
-                        'SELECT * FROM department WHERE name = ?',
-                        [response.roleDept],
-                        (err, department) => {
-                            console.log(response.roleDept);
-                            if (err) {
-                                console.log('There is an error. Please try again');
-                                console.log(err);
-                                addRole();
-                            }
-                            if (!department) {
-                                console.log('Please enter a valid department');
-                                addRole();
-                            } else {
-                                db.query(
-                                    'INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)',
-                                    [response.roleTitle, response.salary, response.roleDept],
-                                    (err, res) => {
-                                        if (err) throw err;
-                                        console.log('Role Added!');
-                                        start();
-                                    }
-                                );
-                            }
+                        'INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)',
+                        [response.roleTitle, response.salary, response.roleDept],
+                        (err, res) => {
+                            if (err) throw err;
+                            console.log('Role Added!');
+                            start();
                         }
                     );
                 });
@@ -298,6 +307,7 @@ addEmployee = () => {
             });
         };
 
+// function to update employee's role
 updateRole = () => {
     const roleList = `SELECT * FROM role`;
     db.promise()
@@ -336,7 +346,7 @@ updateRole = () => {
                     .then(response => {
                         const updatedRole = response.newRole;
                         const employeeID = response.employeeToUpdate
-                        db.query(`UPDATE employee SET role_id = ? WHERE id = ?`, [updatedRole, employeeID], (err, res) => {
+                        db.query(`UPDATE employee SET role_id = ? WHERE id = ?`, [updatedRole, em], (err, res) => {
                             if (err) throw err;
                             console.log('Employee Role Updated!');
                                     start();
